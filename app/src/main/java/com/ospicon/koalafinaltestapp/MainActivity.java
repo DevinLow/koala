@@ -59,22 +59,24 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         koalaSDK.setListener(this);
 
         mConnectStatus=1;// means disconnect
-
+        initAccessoryWindow();
         btConnect = (Button) findViewById(R.id.bt_connect);
         btConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mConnectStatus==0){
-                    koalaSDK.disconnectKoala();
-                } else if(mConnectStatus==1 || mConnectStatus==2){
-                    koalaSDK.scanKoala(true);
-                }
+//                if(mConnectStatus==0){
+//                    koalaSDK.disconnectKoala();
+//                } else if(mConnectStatus==1 || mConnectStatus==2){
+//                    koalaSDK.scanKoala(true);
+//                }
+                showAccessoryWindow();
+                btConnect.setVisibility(View.GONE);
             }
         });
     }
     private void initAccessoryWindow(){
         layoutAccessoryWindow = (LinearLayout) findViewById(R.id.layout_accessory_window);
-        layoutAccessoryWindow.setVisibility(View.INVISIBLE);
+        layoutAccessoryWindow.setVisibility(View.GONE);
 
         TextView textSelectAccessory = (TextView) findViewById(R.id.text_select_accessory);
         textSelectAccessory.setTransformationMethod(null);
