@@ -17,4 +17,10 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:textSize="33dp" />
+    <LinearLayout
+        android:id="@+id/layout_accessory_window"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <include layout="@layout/layout_accessory_window" />
+    </LinearLayout>
 </RelativeLayout>
