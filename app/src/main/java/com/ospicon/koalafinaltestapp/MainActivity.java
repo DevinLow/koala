@@ -266,9 +266,21 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
+                koalaSDK.enableLiveUpdate(true);
+            }
+        },1000);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                koalaSDK.updateKoalaTime();
+            }
+        },1200);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
                 StartTestFlow();
             }
-        }, 10000);
+        }, 5000);
     }
 
     private void StartTestFlow() {
@@ -276,9 +288,9 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         tv_btaddr.setText(deviceAdapter.getDeviceAddress());
         if(configInfo.mStrMatFwVersion.equals(mKoalaMcuVersion)){
             tv_matfw.setText(mKoalaMcuVersion);
-            if(configInfo.mStrBtFwversion.equals(mKoalaBtVersion)){
+            if(configInfo.mStrBtFwversion.equals(koalaSDK.getKoalaBtVersion())){
                 tv_btfw.setText(mKoalaBtVersion);
-                if(configInfo.mStrMatModelName.equals(mModelName)){
+                if(configInfo.mStrMatModelName.equals(koalaSDK.getKoalaModel())){
                     tv_matmodel.setText(mModelName);
                 }else {
                     tv_matmodel.setText(mModelName+"...Error 3");

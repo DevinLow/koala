@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/KoalaFinalTestApp.iml" filepath="$PROJECT_DIR$/KoalaFinalTestApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/koala.iml" filepath="$PROJECT_DIR$/koala.iml" />
     </modules>
