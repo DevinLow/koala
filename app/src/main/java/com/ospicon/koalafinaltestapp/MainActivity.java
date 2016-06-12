@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
             public void run() {
                 StartTestFlow();
             }
-        }, 5000);
+        }, 10000);
     }
 
     private void StartTestFlow() {
@@ -281,14 +281,15 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
                 if(configInfo.mStrMatModelName.equals(mModelName)){
                     tv_matmodel.setText(mModelName);
                 }else {
-
+                    tv_matmodel.setText(mModelName+"...Error 3");
+                    tv_matmodel.setTextColor(Color.RED);
                 }
             }else{
-
+                tv_btfw.setText(mKoalaBtVersion+"...Error 2");
+                tv_btfw.setTextColor(Color.RED);
             }
         }else{
             tv_matfw.setText(mKoalaMcuVersion+"...Error 1");
-            Log.e(configInfo.mStrMatFwVersion,configInfo.mStrMatFwVersion);
             tv_matfw.setTextColor(Color.RED);
         }
 
@@ -302,6 +303,7 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     @Override
     public void koalaBtVersion(String version) {
         mKoalaBtVersion=version;
+        tv_btfw.setText(version);
     }
 
     @Override
@@ -312,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     @Override
     public void koalaModelName(String modelName) {
         mModelName=modelName;
+        tv_matmodel.setText(modelName);
     }
 
     @Override

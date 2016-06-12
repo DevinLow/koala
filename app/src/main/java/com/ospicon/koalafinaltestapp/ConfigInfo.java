@@ -102,7 +102,9 @@ public class ConfigInfo {
     public boolean ReadTxtFile(String strFilePath)
     {
         //打开文件
-        File file = new File(strFilePath);
+        String path=Environment.getExternalStorageDirectory().getPath();
+        path=path+strFilePath;
+        File file = new File(path);
         //如果path是传递过来的参数，可以做一个非目录的判断
         if (file.isDirectory())
         {
@@ -134,6 +136,7 @@ public class ConfigInfo {
                             mStrFactoryReset=right;
                         }else if(left.equals("MATFW")){
                             mStrMatFwVersion=right;
+                            Log.e("MATFW",mStrMatFwVersion);
                         }else if(left.equals("BTFW")){
                             mStrBtFwversion=right;
                         }else if(left.equals("MATMODEL")){
