@@ -1,6 +1,7 @@
 package com.ospicon.koalafinaltestapp;
 
 import android.bluetooth.BluetoothDevice;
+import android.graphics.Color;
 import android.os.Parcel;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.os.Handler;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ospicon.koalasdk.KoalaSDK;
 import com.ospicon.koalasdk.command.KoalaInterface;
@@ -71,17 +73,24 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     public TextView tv_result;
     public Button bt_test1;
     public Button bt_test2;
+    ConfigInfo configInfo=new ConfigInfo();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        koalaSDK=KoalaSDK.getKoalaSDK(this);
-        koalaSDK.setListener(this);
-
-        mConnectStatus=1;// means disconnect
+        btConnect = (Button) findViewById(R.id.bt_connect);
+        if(configInfo.fileExist(configInfo.mFilePath)) {
+            configInfo.ReadTxtFile(configInfo.mFilePath);
+            koalaSDK=KoalaSDK.getKoalaSDK(this);
+            koalaSDK.setListener(this);
+            mConnectStatus=1;// means disconnect
+        }else {
+            btConnect.setVisibility(View.INVISIBLE);
+            Toast toast=Toast.makeText(this, "config file is not exist", Toast.LENGTH_SHORT);
+            toast.show();
+        }
         initAccessoryWindow();
         initResultWindow();
-        btConnect = (Button) findViewById(R.id.bt_connect);
         btConnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,11 +107,8 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     private void initAccessoryWindow(){
         layoutAccessoryWindow = (LinearLayout) findViewById(R.id.layout_accessory_window);
         layoutAccessoryWindow.setVisibility(View.GONE);
-
         TextView textSelectAccessory = (TextView) findViewById(R.id.text_select_accessory);
         textSelectAccessory.setTransformationMethod(null);
-
-
         Button btnCancelAccessory = (Button) findViewById(R.id.btn_cancel_accessory);
         btnCancelAccessory.setTransformationMethod(null);
         btnCancelAccessory.setOnClickListener(new View.OnClickListener() {
@@ -164,14 +170,12 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         bt_test1=(Button)findViewById(R.id.bt_test1);
         bt_test2=(Button)findViewById(R.id.bt_test2);
         bt_test1.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v) {
 
             }
         });
         bt_test2.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v) {
 
@@ -223,14 +227,71 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
                     //btConnect.setText(DISCONNECT);
                     layoutAccessoryWindow.setVisibility(View.GONE);
                     showResultWindow();
+                    verifyTask();
                 } else if(mConnectStatus == 1 || mConnectStatus == 2 ) {
                     layoutAccessoryWindow.setVisibility(View.GONE);
-                    btConnect.setVisibility(View.VISIBLE);
+                   // btConnect.setVisibility(View.VISIBLE);
                 } else if(mConnectStatus == 3 ) {
                   //  btConnect.setText(CONNECTING);
                 }
             }
         });
+    }
+
+    private void verifyTask(){
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                koalaSDK.requestKoalaTime();
+            }
+        },200);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                koalaSDK.requestMcuVersion();
+            }
+        },400);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                koalaSDK.requestKoalaBtVersion();
+            }
+        },600);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+            koalaSDK.requestKoalaModel();
+            }
+        },800);
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                StartTestFlow();
+            }
+        }, 5000);
+    }
+
+    private void StartTestFlow() {
+        tv_matname.setText(deviceAdapter.getDeviceName());
+        tv_btaddr.setText(deviceAdapter.getDeviceAddress());
+        if(configInfo.mStrMatFwVersion.equals(mKoalaMcuVersion)){
+            tv_matfw.setText(mKoalaMcuVersion);
+            if(configInfo.mStrBtFwversion.equals(mKoalaBtVersion)){
+                tv_btfw.setText(mKoalaBtVersion);
+                if(configInfo.mStrMatModelName.equals(mModelName)){
+                    tv_matmodel.setText(mModelName);
+                }else {
+
+                }
+            }else{
+
+            }
+        }else{
+            tv_matfw.setText(mKoalaMcuVersion+"...Error 1");
+            Log.e(configInfo.mStrMatFwVersion,configInfo.mStrMatFwVersion);
+            tv_matfw.setTextColor(Color.RED);
+        }
+
     }
 
     @Override
@@ -256,8 +317,6 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     @Override
     public void koalaDeviceFound(String name, String mac) {
         if(name.toLowerCase().contains("safetosleep")){
-          //  Log.e("DEVICE" , "Device Found with mac: "+ name + " " + mac);
-            // Toast.makeText(context ,  "Device Found with mac: "+ name + " " + mac, Toast.LENGTH_SHORT).show();
             BleDevice bleDevice = new BleDevice(Parcel.obtain());
             bleDevice.name=name;
             bleDevice.addr=mac;

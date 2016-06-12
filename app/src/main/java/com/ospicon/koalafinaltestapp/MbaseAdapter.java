@@ -24,6 +24,12 @@ public class MbaseAdapter extends BaseAdapter {
         this.activity = activity;
         this.data = data;
     }
+    public String getDeviceName(){
+        return  deviceName;
+    }
+    public String getDeviceAddress(){
+        return deviceAddress;
+    }
     public static void setSelectedIndex(int ind) {
         selectedIndex = ind;
     }
@@ -41,7 +47,6 @@ public class MbaseAdapter extends BaseAdapter {
     public long getItemId(int position) {
         return 0;
     }
-
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         BleDevice device= (BleDevice) getItem(position);
