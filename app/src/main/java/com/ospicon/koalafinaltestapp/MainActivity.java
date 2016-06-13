@@ -23,6 +23,7 @@ import com.ospicon.koalasdk.command.KoalaInterface;
 import com.ospicon.koalasdk.dataObject.KSensorUpdate;
 import com.ospicon.koalasdk.dataObject.KStatusUpdate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +64,8 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     public TextView tv_btaddr;
     public TextView tv_matfw;
     public TextView tv_btfw;
-//    public TextView tv_matmodel;
+    public TextView tv_matmodel;
+    public LinearLayout l_matmodel;
 //    public TextView tv_matrssi;
     public TextView tv_soundlvllow;
     public TextView tv_soundlvlhigh;
@@ -75,14 +77,34 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     public TextView tv_result;
     public Button bt_test1;
     public Button bt_test2;
+    public String mLogModel="";
+    public String text="";
     ConfigInfo configInfo=new ConfigInfo();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         btConnect = (Button) findViewById(R.id.bt_connect);
+        configInfo.createExternalStorageDir(this, configInfo.mDirPath);
+        configInfo.creatLogFile(this, configInfo.mLogFileFail);
+        configInfo.creatLogFile(this,configInfo.mLogFilePass);
         if(configInfo.fileExist(configInfo.mFilePath)) {
             configInfo.ReadTxtFile(configInfo.mFilePath);
+            if(configInfo.mStrModel.equals("1")){
+                mLogModel="MODEL\t\t";
+            }else {
+                mLogModel="";
+            }
+            try {
+                configInfo.writeFileTitle(this,configInfo.mLogFileFail,"BTAddress\t\t\t\t\tName\t\t\t\t\t\tMATFW\t\tBTFW\t"+mLogModel+"SOUNDL0\tSOUNDL1\tBR\tTEMP\tNOBR\tOUTOFMAT\tFACRESET\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                configInfo.writeFileTitle(this,configInfo.mLogFilePass,"BTAddress\t\t\t\t\tName\t\t\t\t\t\tMATFW\t\tBTFW\t"+mLogModel+"SOUNDL0\tSOUNDL1\tBR\tTEMP\tNOBR\tOUTOFMAT\tFACRESET\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             koalaSDK=KoalaSDK.getKoalaSDK(this);
             koalaSDK.setListener(this);
             mConnectStatus=1;// means disconnect
@@ -159,7 +181,8 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         tv_btaddr=(TextView)findViewById(R.id.tv_btaddr);
         tv_matfw=(TextView)findViewById(R.id.tv_matfw);
         tv_btfw=(TextView)findViewById(R.id.tv_btfw);
-//        tv_matmodel=(TextView)findViewById(R.id.tv_matmodel);
+        l_matmodel=(LinearLayout)findViewById(R.id.l_matmodel);
+        tv_matmodel=(TextView)findViewById(R.id.tv_matmodel);
 //        tv_matrssi=(TextView)findViewById(R.id.tv_matrssi);
         tv_soundlvllow=(TextView)findViewById(R.id.tv_soundlvllow);
         tv_soundlvlhigh=(TextView)findViewById(R.id.tv_soundlvlhigh);
@@ -181,17 +204,24 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
             @Override
             public void onFinish() {
                 if(mSleepState==0){
+                    text+="PASS\t";
                     tv_outofmat.setText("PASS");
                     if(koalaSDK.resetKoala()){
                         tv_factroyreset.setText("PASS");
+                        text+="PASS\n";
                         tv_result.setText("PASS");
+                        configInfo.writeLog(MainActivity.this, configInfo.mLogFilePass, text);
                     }else {
-                        tv_factroyreset.setText("Fail...Error9");
+                        text+="Fail\n";
+                        tv_factroyreset.setText("Fail\n");
                         tv_factroyreset.setTextColor(Color.RED);
+                        configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                     }
                 }else{
-                    tv_outofmat.setText("Fail...Error8");
+                    text+="Fail...Error 9\n";
+                    tv_outofmat.setText("Fail...Error 9");
                     tv_outofmat.setTextColor(Color.RED);
+                    configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                 }
             }
         };
@@ -225,13 +255,16 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
 
             @Override
             public void onFinish() {
-                if(mBpm<=0){
+                if(mSleepState==3){
+                    text+="PASS\t";
                     tv_nobreath.setText("PASS");
                     bt_test2.setTextColor(Color.BLACK);
                     bt_test2.setClickable(true);
                 }else {
+                    text+="Fail...Error 8\n";
                     tv_nobreath.setText("Fail...Error 8");
                     tv_nobreath.setTextColor(Color.RED);
+                    configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                 }
             }
 
@@ -244,8 +277,10 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
             @Override
             public void onFinish() {
                 if(mBpm<=Integer.parseInt(configInfo.mStrBreathHigh)&&mBpm>=Integer.parseInt(configInfo.mStrBreathLow)){
+                    text+=Integer.toString(mBpm)+"\t";
                     tv_breath.setText(Integer.toString(mBpm));
                     if(mTemperature>Integer.parseInt(configInfo.mStrTemperatureLow)&&mTemperature<Integer.parseInt(configInfo.mStrTemperatureHigh)){
+                        text+=Integer.toString(mTemperature)+"\t";
                         tv_temperature.setText(Integer.toString(mTemperature));
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                         builder.setMessage("请关闭马达");
@@ -259,12 +294,16 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
                         });
                         builder.create().show();
                     }else {
-                        tv_temperature.setText(Integer.toString(mTemperature)+"...Error 7");
+                        text+=Integer.toString(mTemperature)+"...Error 5\n";
+                        tv_temperature.setText(Integer.toString(mTemperature)+"...Error 5");
                         tv_temperature.setTextColor(Color.RED);
+                        configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                     }
                 }else {
+                    text+=Integer.toString(mBpm)+"...Error 7\n";
                     tv_breath.setText(Integer.toString(mBpm)+"...Error 7");
                     tv_breath.setTextColor(Color.RED);
+                    configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                 }
             }
         };
@@ -275,6 +314,7 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
                 bt_test1.setTextColor(Color.GRAY);
                 bt_test1.setClickable(false);
                 if(mSound<Integer.parseInt(configInfo.mStrSoundLow)){
+                    text+=Integer.toString(mSound)+"\t";
                     tv_soundlvllow.setText(Integer.toString(mSound));
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage("请打开音箱");
@@ -285,17 +325,22 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
                             dialog.dismiss();
                             if(mSound>=Integer.parseInt(configInfo.mStrSoundHigh)){
                                 tv_soundlvlhigh.setText(Integer.toString(mSound));
+                                text+=Integer.toString(mSound)+"\t";
                                 timer1.start();
                             }else {
-                                tv_soundlvlhigh.setText(Integer.toString(mSound) + "...Error 4");
+                                text+=Integer.toString(mSound) + "...Error 6.2\n";
+                                tv_soundlvlhigh.setText(Integer.toString(mSound) + "...Error 6.2");
                                 tv_soundlvlhigh.setTextColor(Color.RED);
+                                configInfo.writeLog(MainActivity.this, configInfo.mLogFileFail, text);
                             }
                         }
                     });
                     builder.create().show();
                 }else{
-                    tv_soundlvllow.setText(Integer.toString(mSound)+"...Error 3");
+                    text+=Integer.toString(mSound)+"...Error 6.1\n";
+                    tv_soundlvllow.setText(Integer.toString(mSound)+"...Error 6.1");
                     tv_soundlvllow.setTextColor(Color.RED);
+                    configInfo.writeLog(MainActivity.this,configInfo.mLogFileFail,text);
                 }
             }
         });
@@ -312,6 +357,11 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
         bt_test1.setClickable(false);
         bt_test2.setTextColor(Color.GRAY);
         bt_test2.setClickable(false);
+        if(configInfo.mStrModel.equals("1")){
+            l_matmodel.setVisibility(View.VISIBLE);
+        }else {
+            l_matmodel.setVisibility(View.INVISIBLE);
+        }
     }
     //Notify the download completed for the day (year, month, day) (callback)
     @Override
@@ -400,21 +450,44 @@ public class MainActivity extends AppCompatActivity implements KoalaInterface {
     }
 
     private void StartTestFlow() {
+        text="";
         tv_matname.setText(deviceAdapter.getDeviceName());
         tv_btaddr.setText(koalaSDK.getKoalaAddress());
+        text+=koalaSDK.getKoalaAddress()+"\t";
+        text+=deviceAdapter.getDeviceName()+"\t";
         if(configInfo.mStrMatFwVersion.equals(mKoalaMcuVersion)){
+            text+=mKoalaMcuVersion+"\t";
             tv_matfw.setText(mKoalaMcuVersion);
             if(configInfo.mStrBtFwversion.equals(mKoalaBtVersion)){
+                text+=mKoalaBtVersion+"\t";
                 tv_btfw.setText(mKoalaBtVersion);
-                bt_test1.setClickable(true);
-                bt_test1.setTextColor(Color.BLACK);
+                if(configInfo.mStrModel.equals("1")) {
+                    if(configInfo.mStrMatModelName.equals(mModelName)){
+                        text+=mModelName+"\t";
+                        tv_matmodel.setText(mModelName);
+                        bt_test1.setClickable(true);
+                        bt_test1.setTextColor(Color.BLACK);
+                    }else {
+                        text+=mModelName+"...Error 3\n";
+                        tv_matmodel.setText(mKoalaBtVersion+"...Error 3");
+                        tv_matmodel.setTextColor(Color.RED);
+                        configInfo.writeLog(this,configInfo.mLogFileFail,text);
+                    }
+                }else {
+                    bt_test1.setClickable(true);
+                    bt_test1.setTextColor(Color.BLACK);
+                }
             }else{
+                text+=mKoalaBtVersion+"...Error 2\n";
                 tv_btfw.setText(mKoalaBtVersion+"...Error 2");
                 tv_btfw.setTextColor(Color.RED);
+                configInfo.writeLog(this,configInfo.mLogFileFail,text);
             }
         }else{
+            text+=mKoalaMcuVersion+"...Error 1\n";
             tv_matfw.setText(mKoalaMcuVersion+"...Error 1");
             tv_matfw.setTextColor(Color.RED);
+            configInfo.writeLog(this,configInfo.mLogFileFail,text);
         }
 
     }

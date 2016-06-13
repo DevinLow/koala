@@ -26,8 +26,8 @@ public class ConfigInfo {
     //file path
     static public String mFilePath="/KOAFinalconfig";
     static public String mDirPath="/KOAFinalLog";
-    static public String mLogFilePass="/MATFinalLog/KOAFinalP.txt";
-    static public String mLogFileFail="/MATFinalLog/KOAFinalF.txt";
+    static public String mLogFilePass="/KOAFinalLog/KOAFinalP.txt";
+    static public String mLogFileFail="/KOAFinalLog/KOAFinalF.txt";
 
     //config file info
     static public String mStrSts="";
@@ -49,6 +49,7 @@ public class ConfigInfo {
     static public String mStrSoundLow="";
     static public String mStrSoundHigh="";
     static public String mStrBreathCountDown="";
+    static public String mStrModel="";
 
     //写文件
     private void writeSDFile(String fileName, String write_str) throws IOException {
@@ -171,6 +172,8 @@ public class ConfigInfo {
                             Log.e("mStrSoundLow",mStrSoundLow);
                         }else if(left.equals("BRCOUNTDN")){
                             mStrBreathCountDown=right;
+                        }else if(left.equals("MODEL")){
+                            mStrModel=right;
                         }
                     }
                     instream.close();
